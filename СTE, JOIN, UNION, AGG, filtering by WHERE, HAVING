@@ -1,0 +1,30 @@
+Обʼєднавши дані з чотирьох таблиць, визнач кампанію з найвищим ROMI серед усіх кампаній з загальною сумою витрат більше 500 000. 
+В цій кампанії визнач групу оголошень (adset_name) з найвищим ROMI.
+
+WITH facebook_inf AS (                                                                  --СTE_1 об'єднання 3х таблиць за допомогою LEFT JOIN
+    SELECT fabd.ad_date, fabd.campaign_id, fc.campaign_name, fa.adset_name, 
+           fabd.spend, fabd.impressions, fabd.reach, fabd.clicks, fabd.leads, fabd.value
+    FROM facebook_ads_basic_daily fabd 
+    LEFT JOIN facebook_campaign AS fc ON fc.campaign_id = fabd.campaign_id
+    LEFT JOIN facebook_adset AS fa ON fa.adset_id = fabd.adset_id
+),
+ campaigns_facebook_google AS (                                                          --CTE_2 
+    SELECT ad_date, 'Facebook' as media_sourse, campaign_name, adset_name,
+           spend, impressions, reach, clicks, leads, value 
+    FROM facebook_inf
+    
+    UNION                                                                               --об'єднання CTE1 з таблицею google_ads_basic_daily за допомогою ГТШЩТ
+    
+    SELECT ad_date, 'Google' as media_sourse, campaign_name, adset_name,
+           spend, impressions, reach, clicks, leads, value 
+    FROM google_ads_basic_daily
+)
+ SELECT distinct cfg.campaign_name, cfg.adset_name,
+    SUM(cfg.spend) as sum_spend,
+  	ROUND((SUM(cfg.value::NUMERIC)-SUM(cfg.spend))/SUM(cfg.spend)*100,2) AS ROMI
+FROM campaigns_facebook_google cfg
+WHERE cfg.spend > 0                                                                     -- фільтрація, щоб уникнути ділення на 0
+GROUP BY cfg.campaign_name, cfg.adset_name
+HAVING SUM(cfg.spend)>500000                                                            --фільтрація для знаходження кампаній з витратами більше 500000 
+ORDER BY romi DESC
+LIMIT 1;
