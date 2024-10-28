@@ -1,0 +1,44 @@
+В SQL запиті в CTE обʼєднай дані з таблиць facebook_ads_basic_daily, facebook_adset та facebook_campaign, щоб отримати таблицю, яка міститиме:
+ad_date - дата показу реклами в Facebook
+campaign_name - назва кампанії в Facebook
+adset_name - назва набору оголошень в Facebook
+spend, impressions, reach, clicks, leads, value - метрики кампаній та наборів оголошень у відповідні дні
+В другому CTE обʼєднай дані з таблиці google_ads_basic_daily та першого CTE, щоб отримати єдину таблицю з інформацією про маркетингові кампанії Facebook та Google
+Зробити вибірку:
+ad_date - дата показу реклами
+media_source - назва джерела закупки (Google Ads / Facebook Ads) — цю колонку створи самостійно
+campaign_name - назва кампанії
+adset_name - назва набору оголошень
+агреговані за датою та назвою кампанії й набору оголошень значення для наступних показників:
+загальна сума витрат,
+кількість показів,
+кількість кліків,
+загальний Value конверсій
+Для виконання цього завдання згрупуй таблицю за полями ad_date, media_source, campaign_name та adset_name.
+
+WITH facebook_inf AS (                                                                   --CTE_1
+    SELECT fabd.ad_date, fabd.campaign_id, fc.campaign_name, fa.adset_name, 
+           fabd.spend, fabd.impressions, fabd.reach, fabd.clicks, fabd.leads, fabd.value
+    FROM facebook_ads_basic_daily fabd 
+    LEFT JOIN facebook_campaign AS fc ON fc.campaign_id = fabd.campaign_id
+    LEFT JOIN facebook_adset AS fa ON fa.adset_id = fabd.adset_id
+),
+campaigns_facebook_google AS (                                                           --CTE_2
+    SELECT ad_date, 'Facebook' AS media_sourse, campaign_name, adset_name,
+           spend, impressions, reach, clicks, leads, value 
+    FROM facebook_inf
+    
+    UNION                                                                              -- об'єднання даних з таблиць за допомогою UNION
+    
+    SELECT ad_date, 'Google' AS media_sourse, campaign_name, adset_name,
+           spend, impressions, reach, clicks, leads, value 
+    FROM google_ads_basic_daily
+)
+SELECT cfg.ad_date, cfg.media_sourse,cfg.campaign_name, cfg.adset_name,
+	SUM(cfg.spend) AS sum_spend,                                                         -- агрегація загальна сума витрат
+	SUM(cfg.impressions) AS sum_impressions,                                             -- агрегація кількість показів
+	SUM(cfg.clicks) AS sum_clicks,                                                       -- агрегація кількість кліків
+	SUM(cfg.value) AS sum_value                                                          -- агрегація загальний Value конверсій
+FROM campaigns_facebook_google AS cfg
+GROUP BY cfg.ad_date, cfg.media_sourse,cfg.campaign_name, cfg.adset_name              --групування даних
+ORDER BY cfg.ad_date ASC;
