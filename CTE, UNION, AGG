@@ -1,0 +1,31 @@
+ В SQL запиті в CTE обʼєднай дані з таблиць  - facebook_ads_basic_daily
+       - google_ads_basic_daily, щоб отримати:
+- ad_date - дата показу реклами в Google та Facebook
+- media_source - назва джерела закупки (Google Ads / Facebook Ads) — цю колонку створи самостійно
+- spend, impressions, reach, clicks, leads, value - метрики кампаній та наборів оголошень у відповідні дні
+2. З отриманої обʼєднаної таблиці (CTE) зроби вибірку:
+- ad_date - дата показу реклами
+- media_source - назва джерела закупки
+- агреговані за датою та джерелом значення для наступних показників:
+загальна сума витрат,
+кількість показів,
+кількість кліків,
+загальний Value конверсій
+
+WITH my_cte AS(                                         --CTE
+	SELECT ad_date, 'Facebook Ads' AS media_sourse,
+	spend, impressions, reach, clicks, leads, value 
+	FROM facebook_ads_basic_daily fabd 
+		UNION 										                       -- об'єднання даних з таблиць за допомогою UNION
+	SELECT ad_date, 'Google Ads' AS media_sourse,
+	spend, impressions, reach, clicks, leads, value 
+	FROM google_ads_basic_daily gabd
+	)
+	SELECT mc.ad_date, mc.media_sourse,
+	SUM(spend) AS sum_spend,                           --загальна сума витрат
+	SUM(impressions) AS sum_impressions,               --кількість показів
+	SUM(clicks) AS sum_clicks,                         --кількість кліків
+	SUM(value) AS sum_value                            --загальний Value конверсій
+FROM my_cte mc
+GROUP BY mc.ad_date, mc.media_sourse
+ORDER BY ad_date ASC;
