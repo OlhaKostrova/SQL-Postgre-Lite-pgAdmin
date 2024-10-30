@@ -1,0 +1,89 @@
+-- Display the top 20 specialists senior level in 2022
+
+SELECT 
+	year
+	,exp_level AS level
+	,emp_type AS type
+FROM salaries s
+WHERE 
+	year != 2022
+	AND exp_level = 'SE'
+ORDER BY year ASC
+LIMIT 20;
+
+-- Display the top 5 Data Science salaries in 2023
+
+SELECT 
+	year
+	,job_title AS job
+	,salary_in_usd AS salary
+FROM salaries
+WHERE
+	year = 2023
+	AND job_title = 'Data Scientist'
+ORDER BY salary_in_usd DESC
+LIMIT 5;
+
+-- Display the salary of ML Engineer specialists in 2023
+
+SELECT 
+	year
+	,job_title AS job
+	,salary_in_usd AS salary
+FROM salaries
+WHERE
+	year = 2023
+	AND job_title = 'ML Engineer'
+ORDER BY salary_in_usd DESC;
+
+-- Name the country (comp_location) with the lowest salary for a Data Scientist specialist in 2023
+
+SELECT 
+	year
+	,comp_location AS country
+	,job_title AS job
+	,salary_in_usd AS salary
+FROM salaries
+WHERE
+	year = 2023
+	AND job_title = 'Data Scientist'
+ORDER BY salary_in_usd ASC
+LIMIT 1;
+
+-- Display the salary of Ukrainians (country code UA), add sorting by ascending salary
+
+SELECT 
+	emp_location AS location
+	, salary_in_usd AS salary
+FROM salaries
+WHERE 
+	emp_location = 'UA'
+ORDER BY salary_in_usd ASC;
+
+-- Display the top 5 salaries among all specialists who work completely remotely (remote_ratio = 100)
+
+SELECT 
+	job_title AS job
+	,remote_ratio AS remote
+	,salary_in_usd AS salary
+FROM salaries
+WHERE 
+	remote_ratio = 100
+ORDER BY salary_in_usd DESC
+LIMIT 5;
+
+-- Generate a .csv file with a table of data of all specialists who in 2023 had a salary of more than $ 100,000 and worked in medium-sized companies (comp_size = 'M')
+	
+SELECT 
+	year
+	,job_title AS job
+	,salary_in_usd AS salary
+	,comp_size AS size_of_comp
+FROM salaries
+WHERE
+	year = 2023
+	AND salary_in_usd >= 100000
+	AND comp_size = 'M'
+ORDER BY salary_in_usd DESC;
+
+
