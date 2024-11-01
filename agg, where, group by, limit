@@ -1,0 +1,188 @@
+-- Display the number of unique values for each column containing text values.
+
+SELECT 
+	COUNT(DISTINCT exp_level) AS unique_exp_level
+	,COUNT(DISTINCT emp_type) AS unique_emp_type
+	,COUNT(DISTINCT job_title) AS unique_job_title
+	,COUNT(DISTINCT salary_curr) AS unique_salary_curr
+	,COUNT(DISTINCT emp_location) AS unique_emp_location
+	,COUNT(DISTINCT comp_location) AS unique_comp_location
+	,COUNT(DISTINCT comp_size) AS unique_comp_size
+FROM salaries
+;
+
+/*Display unique values for each column containing text values. 
+(SELECT DISTINCT column_name FROM salaries)*/
+
+SELECT DISTINCT 
+	exp_level
+	, job_title
+	, salary_curr
+	, emp_location
+	, comp_location
+	, comp_size
+FROM salaries
+;
+
+/*Display the average, minimum, and maximum salary (salary_in_usd) for each year 
+(in separate queries, each with a filter for the appropriate year)*/
+
+SELECT 
+	year
+	,ROUND(AVG(salary_in_usd), 2) AS avg_salary_in_usd
+	,MIN(salary_in_usd) AS min_salary_in_usd
+	,MAX(salary_in_usd) AS max_salary_in_usd
+FROM salaries
+WHERE
+	year = 2020
+GROUP BY year
+;
+
+SELECT 
+	year
+	,ROUND(AVG(salary_in_usd), 2) AS avg_salary_in_usd
+	,MIN(salary_in_usd) AS min_salary_in_usd
+	,MAX(salary_in_usd) AS max_salary_in_usd
+FROM salaries
+WHERE
+	year = 2021
+GROUP BY year
+;
+
+SELECT 
+	year
+	,ROUND(AVG(salary_in_usd), 2) AS avg_salary_in_usd
+	,MIN(salary_in_usd) AS min_salary_in_usd
+	,MAX(salary_in_usd) AS max_salary_in_usd
+FROM salaries
+WHERE
+	year = 2022
+GROUP BY year
+;
+
+SELECT 
+	year
+	,ROUND(AVG(salary_in_usd), 2) AS avg_salary_in_usd
+	,MIN(salary_in_usd) AS min_salary_in_usd
+	,MAX(salary_in_usd) AS max_salary_in_usd
+FROM salaries
+WHERE
+	year = 2023
+GROUP BY year
+;
+
+/*Display the average salary (salary_in_usd) for 2023 for each level of employee experience 
+(in separate queries, each with a year and experience filter). Definitions: Entry-level (EN), Mid-level (MI), 
+Senior-level (SE), Executive-level (EX)*/
+
+SELECT 
+	year
+	,ROUND(AVG(salary_in_usd), 2) AS avg_salary_in_usd
+	,exp_level
+FROM salaries
+WHERE 
+	year = 2023
+	AND	exp_level = 'EN'
+GROUP BY year, exp_level
+;
+
+SELECT 
+	year
+	,ROUND(AVG(salary_in_usd), 2) AS avg_salary_in_usd
+	,exp_level
+FROM salaries
+WHERE 
+	year = 2023
+	AND	exp_level = 'MI'
+GROUP BY year, exp_level
+;
+
+SELECT 
+	year
+	,ROUND(AVG(salary_in_usd), 2) AS avg_salary_in_usd
+	,exp_level
+FROM salaries
+WHERE 
+	year = 2023
+	AND	exp_level = 'SE'
+GROUP BY year, exp_level
+;
+
+SELECT 
+	year
+	,ROUND(AVG(salary_in_usd), 2) AS avg_salary_in_usd
+	,exp_level
+FROM salaries
+WHERE 
+	year = 2023
+	AND	exp_level = 'EX'
+GROUP BY year, exp_level
+;
+
+/*To display the 5 highest salaries in 2023 for ML Engineer specialty representatives. 
+Convert salaries to UAH*/
+
+SELECT 
+	year
+	,job_title
+	,(salary_in_usd * 41,21) AS salary_in_uah
+FROM salaries
+WHERE 
+	year = 2023
+	AND job_title = 'ML Engineer'
+ORDER BY salary_in_usd DESC
+LIMIT 5
+;
+
+/*Display the unique values of the remote_ratio column, the data format should be fractional with two decimal places,
+for example: the value 50 should be displayed in the format 0.50.*/
+
+SELECT 
+	DISTINCT ROUND((remote_ratio / 100.00), 2) AS remote_ratio_float
+FROM salaries
+;
+
+/*Display the table data by adding a column 'exp_level_full' with the full name of the employees' experience 
+levels according to the exp_level column. 
+Definitions: Entry-level (EN), Mid-level (MI), Senior-level (SE), Executive-level (EX)*/
+
+SELECT *
+	,CASE
+		WHEN exp_level = 'EN' THEN 'Entry-level' 
+		WHEN exp_level = 'MI' THEN 'Mid-level'
+		WHEN exp_level = 'SE' THEN 'Senior-level'
+		ELSE 'Executive-level' END AS exp_level_full
+FROM salaries
+;
+
+/*Add a “salary_category” column that will display different salary categories according to their value in 
+the “salary_in_usd” column. Definitions: salary less than 20,000 - Category 1, salary less than 50,000 - Category 2, 
+salary less than 100,000 - Category 3, salary more than 100,000 - Category 4.*/
+
+SELECT *
+	,CASE
+		WHEN salary_in_usd < 20000 THEN 'Category 1'
+		WHEN salary_in_usd < 50000 THEN 'Category 2'
+		WHEN salary_in_usd < 100000 THEN 'Category 3'
+		ELSE 'Category 4' END AS salary_category
+FROM salaries
+;
+
+/*Search all columns for missing values by comparing the number of rows in the table with the number of values in 
+the corresponding column.*/
+
+SELECT 
+	COUNT(*) - COUNT(year)
+	,COUNT(*) - COUNT(exp_level)
+	,COUNT(*) - COUNT(emp_type)
+	,COUNT(*) - COUNT(job_title)
+	,COUNT(*) - COUNT(salary)
+	,COUNT(*) - COUNT(salary_curr)
+	,COUNT(*) - COUNT(salary_in_usd)
+	,COUNT(*) - COUNT(emp_location)
+	,COUNT(*) - COUNT(remote_ratio)
+	,COUNT(*) - COUNT(comp_location)
+	,COUNT(*) - COUNT(comp_size)
+FROM salaries
+;
+
