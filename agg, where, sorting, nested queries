@@ -1,0 +1,254 @@
+-- Calculate the number of employees in the table who in 2023 work for a company of size “M” and receive a salary above $100,000
+
+SELECT 
+	COUNT(comp_size) AS emp_of_comp_M
+FROM salaries
+WHERE
+	year = 2023
+	AND comp_size = 'M'
+	AND salary_in_usd > 100000
+	;
+
+-- Display all employees who received a salary of more than $300 thousand in 2023
+
+SELECT 
+	job_title
+FROM salaries
+WHERE
+	year = 2023
+	AND salary_in_usd > 300000
+;
+
+/*Display all employees who in 2023 received a salary of more than $300 thousand and 
+did not work for large companies.*/
+
+SELECT 
+	job_title
+FROM salaries
+WHERE
+	year = 2023
+	AND salary_in_usd > 300000
+	AND comp_size <> 'L'
+;
+
+-- Are there any employees who have worked for the Ukrainian company completely remotely?
+
+SELECT 
+	job_title
+FROM salaries
+WHERE 
+	comp_location = 'UA'
+	AND remote_ratio = '100'
+;
+
+/*Display all employees who in 2023, working in Germany (comp_location = 'DE'), 
+received a salary of more than $100k.*/
+
+SELECT 
+	job_title
+FROM salaries
+WHERE
+	year = 2023
+	AND salary_in_usd > 100000
+	AND comp_location = 'DE'
+;
+
+-- Display only the top 5 employees by salary level from the results from past query 
+
+SELECT 
+	job_title
+	,salary_in_usd
+FROM salaries
+WHERE
+	year = 2023
+	AND salary_in_usd > 100000
+	AND comp_location = 'DE'
+ORDER BY salary_in_usd DESC
+LIMIT 5
+;
+
+-- In addition to specialists from Germany, add specialists from Canada (CA) to the previous table
+
+SELECT 
+	job_title
+	,salary_in_usd
+	,comp_location
+FROM salaries
+WHERE
+	year = 2023
+	AND salary_in_usd > 100000
+	AND comp_location IN ('DE', 'CA')
+ORDER BY salary_in_usd DESC
+LIMIT 5
+;
+
+/*Give a list of countries where ML Engineer and Data Scientist specialists 
+will receive salaries in the range of $50k to $100k in 2021.*/
+
+SELECT DISTINCT
+	comp_location AS countries
+	FROM salaries
+WHERE
+	job_title IN ('ML Engineer', 'Data Scientist')
+	AND salary_in_usd BETWEEN 50000 AND 100000
+	AND year = 2021
+;
+
+SELECT DISTINCT
+	comp_location AS countries
+FROM salaries
+WHERE
+	job_title IN ('ML Engineer', 'Data Scientist')
+	AND salary_in_usd IN 
+	(
+	SELECT 
+		salary_in_usd
+	FROM salaries
+	WHERE
+		salary_in_usd BETWEEN 50000 AND 100000
+		AND year = 2021
+		)
+;
+
+/*Calculate the number of specialists who worked remotely (remote_ratio=100 or remote_ratio=50) 
+in medium-sized companies (comp_size=M) and in large companies (comp_size=L).*/
+
+SELECT 
+	COUNT(remote_ratio) AS nmb_remore_workers
+FROM salaries
+WHERE
+	remote_ratio IN ('100', '50')
+	AND comp_size IN ('M', 'L')
+;
+
+-- Output the number of countries starting with "C"
+
+SELECT 
+	COUNT(comp_location) AS nmb_of_C_countries
+FROM salaries
+WHERE
+	comp_location LIKE 'C%'
+;
+
+-- Show professions whose names do not consist of three words.
+
+SELECT DISTINCT
+	job_title
+FROM salaries
+WHERE
+	job_title NOT LIKE '% % %'
+;
+
+-- For each year, provide data on the average salary and the number of specialists.
+
+SELECT 
+	year
+	,ROUND(AVG(salary_in_usd), 2) AS avg_salary
+	,COUNT(job_title) AS nmb_of_specialists
+FROM salaries
+WHERE
+	year IN (2020, 2021,2022, 2023)
+GROUP BY year
+ORDER BY year ASC
+;
+
+-- Output all specialists with salaries above the average.
+
+SELECT *
+FROM salaries
+WHERE 
+	salary_in_usd > 
+(
+	SELECT AVG(salary_in_usd)
+	FROM salaries
+);
+
+-- Output all specialists with salaries above the average for 2023.
+
+SELECT *
+FROM salaries
+WHERE 
+	salary_in_usd >                    -- comparing with avg_salaries
+(
+	SELECT AVG(salary_in_usd)
+	FROM salaries
+	WHERE
+		year = 2023
+)
+	AND year = 2023;
+
+/*Display all specialists who live in countries where the average salary 
+is higher than the average salary for all countries for 2023.*/
+
+SELECT *
+FROM salaries
+WHERE
+	emp_location IN
+(
+	SELECT
+		comp_location
+	FROM salaries
+	WHERE
+		year = 2023
+	GROUP BY comp_location
+	HAVING AVG(salary_in_usd) > 
+	(
+	SELECT 
+		AVG(salary_in_usd) AS avg_salary
+	FROM salaries
+	WHERE
+		year = 2023
+));
+
+-- Find the minimum salary among the maximum salary  by country.
+
+SELECT 
+	MIN(m.salary_in_usd) AS min_salary
+FROM 
+(
+SELECT 
+	comp_location AS counries
+	,MAX(salary_in_usd) AS salary_in_usd
+FROM salaries
+GROUP BY comp_location
+) AS m;
+
+SELECT 
+	comp_location AS counries
+	,MAX(salary_in_usd) AS salary_in_usd
+FROM salaries
+GROUP BY comp_location
+ORDER BY MAX(salary_in_usd) ASC
+LIMIT 1;
+
+/*For each profession, display the difference between the average salary 
+and the maximum salary of all specialists.*/
+
+SELECT
+	job_title
+	,ROUND(AVG(salary_in_usd) -
+(
+		SELECT 
+			MAX(salary_in_usd)
+		FROM salaries
+), 2) AS diff_salary
+FROM salaries
+GROUP BY job_title;
+
+-- Output the data for the employee who receives the second highest salary.
+
+SELECT *
+FROM
+(
+	SELECT *
+	FROM salaries
+	ORDER BY salary_in_usd DESC
+	LIMIT 2
+) AS s
+ORDER BY salary_in_usd ASC
+LIMIT 1;
+
+SELECT *
+FROM salaries
+ORDER BY salary_in_usd DESC
+LIMIT 1 OFFSET 1;
