@@ -1,0 +1,44 @@
+SELECT 
+	InvoiceDate 
+	, Total 
+	, SUM(Total) OVER(ORDER BY InvoiceDate) AS cum_sum
+FROM Invoice AS i ;
+
+WITH ranks AS (
+SELECT 	
+	InvoiceId
+	, CustomerId 
+	, Total 
+	, ROW_NUMBER () OVER (PARTITION BY CustomerId ORDER BY Total DESC) AS invoice_nmb
+	, RANK () OVER (PARTITION BY CustomerId ORDER BY Total DESC) AS invoice_rank
+	, DENSE_RANK () OVER (PARTITION BY CustomerId ORDER BY Total DESC) AS invoice_dense
+FROM Invoice AS i 
+ORDER BY CustomerId 
+)
+SELECT *
+FROM ranks AS r
+WHERE r.invoice_nmb = 2
+;
+
+
+
+SELECT 
+	InvoiceId 
+	,CustomerId 
+	,InvoiceDate 
+	,Total
+	,LAG(Total, 1) OVER(PARTITION BY CustomerId ORDER BY InvoiceDate) AS lag_total
+	,LAG(InvoiceDate, 1) OVER(PARTITION BY CustomerId ORDER BY InvoiceDate) AS lag_date
+	,JULIANDAY(InvoiceDate) - JULIANDAY(LAG(InvoiceDate, 1) OVER(PARTITION BY CustomerId ORDER BY InvoiceDate)) AS diff_in_days
+	,LEAD(Total, 1) OVER(PARTITION BY CustomerId ORDER BY InvoiceDate) AS lead_total
+FROM Invoice i 
+ORDER BY CustomerId ;
+
+SELECT
+	InvoiceId 
+	,CustomerId 
+	,InvoiceDate 
+	,Total 
+	,FIRST_VALUE(Total) OVER(PARTITION BY CustomerId ORDER BY InvoiceDate ASC) AS first_order
+	,LAST_VALUE(Total) OVER(PARTITION BY CustomerId ORDER BY InvoiceDate ASC) AS last_order
+FROM Invoice i ;
