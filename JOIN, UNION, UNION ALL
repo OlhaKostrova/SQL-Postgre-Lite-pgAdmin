@@ -1,0 +1,72 @@
+SELECT 
+	t.TrackId 
+	,t.Name 
+	,a.Title 
+	,a.ArtistId 
+	,art.Name 
+FROM Track t 
+JOIN Album a ON t.AlbumId  = a.AlbumId 
+JOIN Artist art ON a.AlbumId = art.ArtistId 
+WHERE art.Name LIKE 'A%'
+LIMIT 100;
+
+SELECT 
+	art.Name 
+	, COUNT (t.TrackId)
+FROM Track t 
+JOIN Album a ON t.AlbumId  = a.AlbumId 
+JOIN Artist art ON a.AlbumId = art.ArtistId 
+WHERE art.Name LIKE 'A%'
+GROUP BY art.Name 
+ORDER BY COUNT (t.TrackId) DESC
+LIMIT 100;
+
+SELECT 
+	'Customer' AS type
+	,Email
+FROM Customer c 
+
+UNION 
+
+SELECT 
+	'Employee' AS type
+	,Email 
+FROM Employee e ;
+
+SELECT 
+	'Customer' AS type
+	,Email
+FROM Customer c 
+
+UNION ALL
+
+SELECT 
+	'Employee' AS type
+	,Email 
+FROM Employee e ;
+
+--
+
+SELECT 
+	'Customer' AS type
+	,Email
+FROM Customer c 
+
+INTERSECT
+
+SELECT 
+	'Employee' AS type
+	,Email 
+FROM Employee e ;
+
+SELECT 
+	'Customer' AS type
+	,Email
+FROM Customer c 
+
+EXCEPT
+
+SELECT 
+	'Employee' AS type
+	,Email 
+FROM Employee e ;
