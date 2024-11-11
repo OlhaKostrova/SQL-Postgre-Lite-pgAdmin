@@ -1,0 +1,48 @@
+SELECT 
+	job_title 
+	,ROUND(AVG(salary_in_usd), 2) AS avg_salary
+FROM salaries s
+GROUP BY job_title;
+
+WITH job_salaries AS(
+SELECT 
+	job_title
+	,salary_in_usd
+	, AVG(salary_in_usd) OVER(PARTITION BY job_title) AS avg_salary
+	, MIN(salary_in_usd) OVER(PARTITION BY job_title) AS min_salary
+	, MAX(salary_in_usd) OVER(PARTITION BY job_title) AS max_salary
+	,COUNT(salary_in_usd) OVER(PARTITION BY job_title) AS job_count
+	,SUM(salary_in_usd) OVER(PARTITION BY job_title) AS sum_salary
+FROM salaries AS s
+WHERE year = 2023
+)
+SELECT *
+	,js.salary_in_usd::float / js.max_salary AS ratio_max
+	,js.salary_in_usd / js.avg_salary AS ratio_avg
+FROM job_salaries AS js;
+
+
+WITH job_salaries AS(
+SELECT 
+	job_title
+	,salary_in_usd
+	,SUM(salary_in_usd) OVER(PARTITION BY job_title ORDER BY salary_in_usd) AS sum_salary
+FROM salaries AS s
+WHERE year = 2023
+)
+SELECT *
+FROM job_salaries AS js;
+
+
+
+WITH job_salaries AS(
+SELECT 
+	job_title
+	,salary_in_usd
+	, AVG(salary_in_usd) OVER(PARTITION BY job_title) AS avg_salary
+FROM salaries AS s
+WHERE year = 2023
+)
+SELECT *
+FROM job_salaries AS js
+WHERE js.salary_in_usd > js.avg_salary ;
