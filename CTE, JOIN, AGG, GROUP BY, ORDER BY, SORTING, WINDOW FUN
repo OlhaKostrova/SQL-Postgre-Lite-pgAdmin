@@ -1,0 +1,81 @@
+/*Write a SQL query to calculate the amount of bonus for each employee. 
+The bonus is calculated by the formula: rate * bonus percentage by department. 
+The query result should be sorted in descending order of the bonus amount.*/
+
+SELECT
+	s.name
+	, s.salary * d.bonus_rate AS total_bonus
+FROM staff  AS s
+LEFT JOIN departments AS d ON s.department_id = d.id
+ORDER BY total_bonus DESC;
+
+
+/*Calculate what percentage of the departmental bonus each employee receives. First, calculate the total bonus for the department, and then determine what percentage of this bonus falls on each employee.
+The final table should contain the employee's name, the name of the department, the employee's total bonus, and the percentage of the bonus that falls on him/her. 
+The result should contain only those employees who account for more than 20% of their department's bonus. The result should be sorted in descending order of bonus percentage.*/
+
+-- Variant_1
+
+WITH stuff_bonus AS (
+	SELECT
+		s.name
+		,s.department_id
+		,d.name AS department
+		,s.salary * d.bonus_rate AS total_bonus
+	FROM staff AS s
+	LEFT JOIN departments AS d ON s.department_id = d.id
+	),
+	bonus_of_depar AS(
+	SELECT
+		sb.department
+		,SUM(sb.total_bonus) AS total_bonus_of_department
+	FROM stuff_bonus AS sb
+	GROUP BY sb.department
+	),
+	dept_rate AS (
+	SELECT
+		sb.name
+		,bd.department
+		,sb.total_bonus
+		,ROUND((sb.total_bonus / bd.total_bonus_of_department), 2) AS dept_bonus_rate
+	FROM bonus_of_depar AS bd
+	INNER JOIN stuff_bonus AS sb ON bd.department = sb.department
+	)
+	SELECT
+		name
+		,department
+		,total_bonus
+		,dept_bonus_rate
+	FROM dept_rate AS dr
+	WHERE
+		dept_bonus_rate > 0.20
+	ORDER BY dept_bonus_rate DESC;
+
+-- Variant_2
+
+WITH stuff_bonus AS (
+	SELECT
+		s.name
+		,s.department_id
+		,d.name AS department
+		,s.salary * d.bonus_rate AS total_bonus
+	FROM staff AS s
+	LEFT JOIN departments AS d ON s.department_id = d.id
+),
+bonus_of_depar_rate AS (
+	SELECT
+		sb.name
+	    ,sb.department
+	    ,sb.total_bonus
+	    ,ROUND(total_bonus / SUM(total_bonus) OVER (PARTITION BY department), 2) AS dept_bonus_rate
+	  FROM stuff_bonus AS sb
+)
+SELECT
+	name
+	,department
+	,total_bonus
+	,dept_bonus_rate
+FROM bonus_of_depar_rate
+WHERE
+	dept_bonus_rate > 0.20
+ORDER BY dept_bonus_rate DESC;
