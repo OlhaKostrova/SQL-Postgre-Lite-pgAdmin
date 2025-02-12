@@ -1,0 +1,59 @@
+-- Дослідження даних
+SELECT *
+FROM salaries
+LIMIT 10;
+
+-- Оцінка обсягу даних
+SELECT COUNT (*)
+FROM salaries;
+
+-- Оцінка відсутності значень у колонці
+SELECT 
+	COUNT (*)
+	, COUNT (*) - COUNT (salary_in_usd) AS missing_val
+FROM salaries;
+
+-- Оцінка топ 10 професій за кількістю відповідей
+SELECT
+	job_title
+	, COUNT (*)
+FROM salaries
+GROUP BY 1
+ORDER BY 2 DESC
+LIMIT 10;
+
+/* Аналіз за кожною професією та рівнем знань мінімальну, максимальну? середню заробітню плату
+(описова статистика та розмах даних)*/
+SELECT
+	job_title
+	, exp_level
+	, MIN (salary_in_usd)
+	, MAX (salary_in_usd)
+	, ROUND (AVG (salary_in_usd), 2) AS avg_salary
+	, stddev (salary_in_usd)
+FROM salaries
+GROUP BY 1, 2;
+
+-- Оцінка числових даних  (зароботної плати) без залучення категорій, як часто певна сума заробітної плати зучтрічається в датасеті
+SELECT
+	TRUNC (salary_in_usd, -1)
+	, COUNT (*)
+FROM salaries
+GROUP BY 1;
+
+-- Оцінка кожного значення за категорією
+SELECT
+	CASE WHEN salary_in_usd <= 10000 THEN 'A'
+		 WHEN salary_in_usd <= 20000 THEN 'B'
+		 WHEN salary_in_usd <= 50000 THEN 'C'
+		 WHEN salary_in_usd <= 100000 THEN 'D'
+		 WHEN salary_in_usd <= 200000 THEN 'E'
+		 ELSE 'F' END AS salary_category
+	, COUNT (*)
+FROM salaries
+GROUP BY 1;
+
+-- Перевірка кореляції даних
+SELECT
+	corr (remote_ratio, salary_in_usd)
+FROM salaries;
